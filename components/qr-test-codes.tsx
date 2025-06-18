@@ -10,17 +10,17 @@ export function QRTestCodes() {
   const testCodes = [
     {
       name: "Networking Badge",
-      data: "tedx-badge-networking-002",
+      data: "tedx-badge-networking-2",
       description: "Scan to unlock networking badge challenge",
     },
     {
       name: "Quiz Badge",
-      data: "tedx-badge-quiz-004",
+      data: "tedx-badge-quiz-4",
       description: "Scan to start the TEDx knowledge quiz",
     },
     {
       name: "Photo Badge",
-      data: "tedx-badge-photo-003",
+      data: "tedx-badge-photo-3",
       description: "Scan to unlock photo booth challenge",
     },
     {
