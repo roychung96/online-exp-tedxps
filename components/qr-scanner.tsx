@@ -123,13 +123,13 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
   return (
     <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
       {error ? (
-        <div className="flex flex-col items-center justify-center h-full text-white space-y-4 p-4">
+        <div className="flex flex-col items-center justify-center h-full text-black space-y-4 p-4">
           <CameraOff className="w-16 h-16 text-gray-400" />
           <p className="text-center text-sm">{error}</p>
           <div className="space-y-2">
             <Button
               onClick={startScanning}
-              className="px-4 py-2 bg-[#E62B1E] text-white rounded-lg"
+              className="px-4 py-2 bg-[#E62B1E] text-black rounded-lg"
               disabled={!scanner || !cameraId}
             >
               <Camera className="w-4 h-4 mr-2" />
@@ -138,7 +138,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
             <Button
               onClick={simulateQRDetection}
               variant="outline"
-              className="px-4 py-2 border-white text-white hover:bg-white hover:text-black"
+              className="px-4 py-2 border-white text-black hover:bg-white hover:text-black"
             >
               Demo Mode
             </Button>
@@ -169,7 +169,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
             {!isScanning ? (
               <Button
                 onClick={startScanning}
-                className="px-4 py-2 bg-[#E62B1E] text-white rounded-lg"
+                className="px-4 py-2 bg-[#E62B1E] text-black rounded-lg"
                 disabled={!scanner || !cameraId}
               >
                 <Camera className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
               <Button
                 onClick={stopScanning}
                 variant="outline"
-                className="px-4 py-2 border-white text-white hover:bg-white hover:text-black"
+                className="px-4 py-2 border-white text-black hover:bg-white hover:text-black"
               >
                 Stop Scanning
               </Button>
