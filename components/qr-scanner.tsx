@@ -117,7 +117,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
 
   const simulateQRDetection = () => {
     // Keep the demo functionality for testing
-    onDetect("tedx-badge-networking-001")
+    onDetect("tedx-badge-networking-2")
   }
 
   return (
@@ -189,7 +189,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
               <Button
                 onClick={switchCamera}
                 variant="outline"
-                className="px-3 py-2 border-white text-white hover:bg-white hover:text-black"
+                className="px-3 py-2 border-white text-black hover:bg-white hover:text-black"
                 disabled={isScanning}
               >
                 <RotateCcw className="w-4 h-4" />
@@ -199,7 +199,7 @@ export function QRCodeScanner({ onDetect }: QRCodeScannerProps) {
             <Button
               onClick={simulateQRDetection}
               variant="outline"
-              className="px-4 py-2 border-white text-white hover:bg-white hover:text-black text-xs"
+              className="px-4 py-2 border-white text-black hover:bg-white hover:text-black text-xs"
             >
               Demo
             </Button>
