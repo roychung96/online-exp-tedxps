@@ -1,90 +1,144 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { QRCodeScanner } from "@/components/qr-scanner"
-import { QRTestCodes } from "@/components/qr-test-codes"
+import { useQuery } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
+import Link from "next/link"
+import type { Block } from "@/types/block"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function ScanPage() {
-  const router = useRouter()
+async function fetchBlocks(): Promise<Block[]> {
+  const response = await fetch("/api/blocks")
+  const data = await response.json()
+  return data.blocks
+}
 
-  const handleQRDetect = (data: string) => {
-    console.log("QR Code detected:", data)
+export default function OverviewPage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const {
+    data: blocks = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["blocks"],
+    queryFn: fetchBlocks,
+  })
 
-    // Parse different QR code formats
-    try {
-      // Handle TEDx badge QR codes
-      if (data.includes("tedx-badge-") || data.includes("badge")) {
-        const badgeId = data.split("-").pop() || data.split("/").pop()
-        if (badgeId && badgeId.match(/^\d+$/)) {
-          router.push(`/badge/${badgeId}`)
-        } else {
-          router.push("/hub")
-        }
-        return
-      }
+  useEffect(() => {
+    if (!blocks.length || !canvasRef.current) return
 
-      // Handle URLs
-      if (data.startsWith("http://") || data.startsWith("https://")) {
-        // Check if it's a TEDx related URL
-        if (data.includes("tedx") || data.includes("badge")) {
-          const url = new URL(data)
-          const pathSegments = url.pathname.split("/")
-          const badgeIndex = pathSegments.indexOf("badge")
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
 
-          if (badgeIndex !== -1 && pathSegments[badgeIndex + 1]) {
-            router.push(`/badge/${pathSegments[badgeIndex + 1]}`)
-          } else {
-            router.push("/hub")
-          }
-        } else {
-          // External URL - could open in new tab or show warning
-          window.open(data, "_blank")
-        }
-        return
-      }
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Handle JSON data
-      if (data.startsWith("{")) {
-        const parsed = JSON.parse(data)
-        if (parsed.type === "tedx-badge" && parsed.badgeId) {
-          router.push(`/badge/${parsed.badgeId}`)
-        } else if (parsed.action === "auth") {
-          router.push("/auth")
-        } else {
-          router.push("/hub")
-        }
-        return
-      }
+    // Draw grid lines
+    ctx.strokeStyle = "#e5e7eb"
+    ctx.lineWidth = 1
 
-      // Handle simple badge codes
-      if (data.match(/^\d+$/)) {
-        router.push(`/badge/${data}`)
-        return
-      }
+    for (let i = 0; i <= 16; i++) {
+      ctx.beginPath()
+      ctx.moveTo(i * 32, 0)
+      ctx.lineTo(i * 32, 512)
+      ctx.stroke()
 
-      // Default fallback
-      router.push("/hub")
-    } catch (error) {
-      console.error("Error parsing QR code:", error)
-      // Fallback to hub on any parsing error
-      router.push("/hub")
+      ctx.beginPath()
+      ctx.moveTo(0, i * 32)
+      ctx.lineTo(512, i * 32)
+      ctx.stroke()
     }
+
+    // Draw blocks
+    blocks.forEach((block) => {
+      const x = block.col * 32
+      const y = block.row * 32
+
+      // Draw block background based on status
+      if (block.status === "completed") {
+        ctx.fillStyle = "#10b981"
+      } else if (block.status === "drawing") {
+        ctx.fillStyle = "#f59e0b"
+      } else {
+        ctx.fillStyle = "#f3f4f6"
+      }
+
+      ctx.fillRect(x + 1, y + 1, 30, 30)
+
+      // Draw pixel data if available
+      if (block.pixelData.length > 0) {
+        block.pixelData.forEach((pixel) => {
+          ctx.fillStyle = pixel.color
+          ctx.fillRect(x + pixel.column * 4 + 1, y + pixel.row * 4 + 1, 4, 4)
+        })
+      }
+    })
+  }, [blocks])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading pixel art canvas...</div>
+      </div>
+    )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-red-600">Error loading blocks</div>
+      </div>
+    )
+  }
+
+  const completedBlocks = blocks.filter((b) => b.status === "completed").length
+  const drawingBlocks = blocks.filter((b) => b.status === "drawing").length
+  const availableBlocks = blocks.filter((b) => b.status === "available").length
+
   return (
-    <div className="font-sans text-gray-800 bg-white min-h-screen">
-      <Header progress={25} />
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-6xl mx-auto">
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-3xl font-bold text-center">Collaborative Pixel Art Canvas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{completedBlocks}</div>
+                <div className="text-sm text-gray-600">Completed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{drawingBlocks}</div>
+                <div className="text-sm text-gray-600">In Progress</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-600">{availableBlocks}</div>
+                <div className="text-sm text-gray-600">Available</div>
+              </div>
+            </div>
 
-      <main className="h-[calc(100vh-4rem-3rem)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md aspect-square">
-          <QRCodeScanner onDetect={handleQRDetect} />
-        </div>
-      </main>
+            <div className="flex justify-center mb-6">
+              <canvas
+                ref={canvasRef}
+                width={512}
+                height={512}
+                className="border-2 border-gray-300 rounded-lg shadow-lg"
+              />
+            </div>
 
-      <Footer />
-      <QRTestCodes />
+            <div className="flex justify-center gap-4">
+              <Button asChild>
+                <Link href="/select">Start Contributing</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/end">View Gallery</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
