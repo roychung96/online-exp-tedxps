@@ -2,8 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --tedx-red: #e62b1e;
+  --tedx-black: #000000;
+  --tedx-gray: #333333;
+  --tedx-white: #ffffff;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
 }
 
 @layer utilities {
